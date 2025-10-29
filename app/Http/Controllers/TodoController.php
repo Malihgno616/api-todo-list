@@ -9,12 +9,43 @@ use Illuminate\Support\Facades\Validator;
 class TodoController extends Controller
 {
     
-    public function getAllTodos(Request $request)
+    public function createTodo(Request $request)
+    {
+        // Validação básica
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'description' => 'nullable|string',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'messages' => $validator->errors()
+            ], 422);
+        }
+    
+        // Cria e persiste a tarefa no banco de dados
+        $todo = new Todo();
+        $todo->title = $request->input('title');
+        $todo->description = $request->input('description');
+        // Se houver usuário autenticado, associe (assumindo a coluna user_id na tabela)
+        if ($request->user()) {
+            $todo->user_id = $request->user()->id;
+        }
+        $todo->save();
+    
+        return response()->json([
+            'message' => 'Todo created successfully',
+            'todo' => $todo
+        ], 201);
+    }
+    
+    public function allTodos(Request $request)
     {
         $request->user(); // Obtém o usuário autenticado
-        $todos = []; // Aqui você buscaria as tarefas do banco de dados
+        $allTodos = Todo::all(); // Exemplo de obtenção de todas as tarefas
         return response()->json([
-            'todos' => $todos
+            'todos' => $allTodos
         ]);    
     }
 
@@ -42,29 +73,6 @@ class TodoController extends Controller
         ]);
     }
 
-    public function createTodo(Request $request)
-    {
-        // Validação básica
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
-            'description' => 'nullable|string',
-        ]);
-        
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => 'Validation failed',
-                'messages' => $validator->errors()
-            ], 422);
-        }
-   
-        return response()->json([
-            'message' => 'Todo created successfully',
-            'todo' => [
-                'title' => $request->input('title'),
-                'description' => $request->input('description')
-            ]
-        ], 201);
-    }
 
     public function updateTodo(Request $request, $id)
     {
