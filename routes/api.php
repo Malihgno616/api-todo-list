@@ -22,8 +22,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Todas as tarefas do usuário autenticado
     Route::get('/todos', [TodoController::class, 'allTodos']);
 
-    // Route::get('/todo/{id}', [TodoController::class, 'selectTodo']);
-    
-    // Route::get('/todos', [TodoController::class, 'paginatedTodo']);
+    // Detalhes de uma tarefa específica do usuário autenticado
+    Route::get('/todo/{id}', [TodoController::class, 'selectTodo']);
+
+    Route::get('/todos', [TodoController::class, 'paginatedTodo']);
     // Route::delete('/todo/{id}', [TodoController::class, 'deleteTodo']);
 });

@@ -52,33 +52,48 @@ class TodoController extends Controller
     public function selectTodo(Request $request, $id)
     {
         $request->user(); // Obtém o usuário autenticado
-        $todo = null; // Aqui você buscaria a tarefa específica do banco de dados pelo ID
+        $todo = new Todo();
+        $todo = Todo::find($id); // Exemplo de obtenção de todas as tarefas
         return response()->json([
-            'todo' => $todo
+            'todo' => [
+                $todo->id,
+                $todo->title,
+                $todo->description
+            ]
         ]);
     }
 
     public function paginatedTodo(Request $request)
     {
+        $page = $request->get('page', 1);
         $perPage = $request->get('limit', 10);
-        
-        $todos = Todo::orderBy('id')->paginate($perPage);
-        
+
+        $todos = Todo::orderBy('id')
+            ->paginate($perPage, ['*'], 'page', $page);
+            
         return response()->json([
             'current_page' => $todos->currentPage(),
             'data' => $todos->items(),
             'total' => $todos->total(),
-            'per_page' => $todos->perPage(),
-            'last_page' => $todos->lastPage()
         ]);
     }
 
-
     public function updateTodo(Request $request, $id)
     {
+        
+        $todo = new Todo();
+        $todo = Todo::find($id);
+        
+        if (!$todo) {
+            return response()->json([
+                'error' => 'Todo not found'
+            ], 404);
+        }
+
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|required|string',
             'description' => 'sometimes|nullable|string',
+            'completed' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -92,7 +107,10 @@ class TodoController extends Controller
 
     public function deleteTodo(Request $request, $id)
     {
+        
         Todo::where('id', $id)->delete();
+        $request->user(); // Obtém o usuário autenticado
+        
         return response()->json([
             'message' => 'Todo deleted successfully'
         ]);
