@@ -28,6 +28,7 @@ class TodoController extends Controller
         $todo = new Todo();
         $todo->title = $request->input('title');
         $todo->description = $request->input('description');
+        $todo->completed = false;
         // Se houver usuário autenticado, associe (assumindo a coluna user_id na tabela)
         if ($request->user()) {
             $todo->user_id = $request->user()->id;
@@ -53,12 +54,21 @@ class TodoController extends Controller
     {
         $request->user(); // Obtém o usuário autenticado
         $todo = new Todo();
-        $todo = Todo::find($id); // Exemplo de obtenção de todas as tarefas
+        $todo = Todo::find($id);
+        
+        if(!$todo) {
+            return response()->json([
+                'error' => 'Todo not found or already deleted'
+            ], 404);
+        }
+
+        // Exemplo de obtenção de todas as tarefas
         return response()->json([
             'todo' => [
-                $todo->id,
-                $todo->title,
-                $todo->description
+                'id' => $todo->id,
+                'title' => $todo->title,
+                'description' => $todo->description,
+                'completed' => $todo->completed
             ]
         ]);
     }
@@ -80,10 +90,8 @@ class TodoController extends Controller
 
     public function updateTodo(Request $request, $id)
     {
-        
-        $todo = new Todo();
         $todo = Todo::find($id);
-        
+
         if (!$todo) {
             return response()->json([
                 'error' => 'Todo not found'
@@ -102,15 +110,42 @@ class TodoController extends Controller
                 'messages' => $validator->errors()
             ], 422);
         }
-        
+
+        if ($request->has('title')) {
+            $todo->title = $request->input('title');
+        }
+        if ($request->has('description')) {
+            $todo->description = $request->input('description');
+        }
+        if ($request->has('completed')) {
+            $todo->completed = (bool) $request->input('completed');
+        }
+
+        $todo->save();
+
+        return response()->json([
+            'message' => 'Todo updated successfully',
+            'todo' => [
+                'id' => $todo->id,
+                'title' => $todo->title,
+                'description' => $todo->description,
+                'completed' => $todo->completed
+            ]
+        ]);
     }
 
     public function deleteTodo(Request $request, $id)
-    {
-        
-        Todo::where('id', $id)->delete();
+    {   
+        $todo = Todo::find($id);
         $request->user(); // Obtém o usuário autenticado
-        
+        if (!$todo) {
+            return response()->json([
+                'error' => 'Todo not found or already deleted'
+            ], 404);
+        }
+
+        $todo->delete();
+
         return response()->json([
             'message' => 'Todo deleted successfully'
         ]);

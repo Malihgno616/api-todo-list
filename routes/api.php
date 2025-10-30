@@ -19,12 +19,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Criar nova tarefa apenas o usuário autenticado
     Route::post('/todo', [TodoController::class, 'createTodo']);
 
-    // Todas as tarefas do usuário autenticado
-    Route::get('/todos', [TodoController::class, 'allTodos']);
-
     // Detalhes de uma tarefa específica do usuário autenticado
     Route::get('/todo/{id}', [TodoController::class, 'selectTodo']);
 
+    // Tarefas paginadas do usuário autenticado
     Route::get('/todos', [TodoController::class, 'paginatedTodo']);
+    
+    // Atualizar uma tarefa específica do usuário autenticado
+    Route::put('todo/{id}', [TodoController::class, 'updateTodo']);
+
     // Route::delete('/todo/{id}', [TodoController::class, 'deleteTodo']);
+    Route::delete('todo/{id}', [TodoController::class, 'deleteTodo']);
 });
