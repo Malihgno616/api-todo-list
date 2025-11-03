@@ -65,10 +65,12 @@ Accept: application/json
 Authorization: Bearer \ 14|YqiiNkZG57Uq4j4VfJ2fK634CIdziASh1o3taxzZae9911fc
 
 ```
+```
 {
   "success": true,
   "message": "Logout realizado com sucesso"
 }
+```
 
 ## Clone the repository
 ```
